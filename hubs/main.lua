@@ -8,6 +8,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 local screenGui = Instance.new("ScreenGui")
@@ -32,6 +33,7 @@ local function fetch(url)
     return nil
 end
 
+-- Colors
 local colors = {
     bg = Color3.fromRGB(8, 8, 20),
     card = Color3.fromRGB(12, 12, 28),
@@ -39,22 +41,26 @@ local colors = {
     accentDark = Color3.fromRGB(0, 180, 180),
     text = Color3.fromRGB(200, 200, 255),
     textDim = Color3.fromRGB(120, 120, 160),
-    error = Color3.fromRGB(255, 50, 100)
+    error = Color3.fromRGB(255, 50, 100),
+    border = Color3.fromRGB(0, 200, 200)
 }
 
+-- Main resizable frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 500, 0, 600)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
+mainFrame.Size = UDim2.new(0, 550, 0, 650)
+mainFrame.Position = UDim2.new(0.5, -275, 0.5, -325)
 mainFrame.BackgroundColor3 = colors.bg
 mainFrame.BackgroundTransparency = 0.05
-mainFrame.BorderSizePixel = 0
+mainFrame.BorderSizePixel = 2
+mainFrame.BorderColor3 = colors.border
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
+-- Glow shadow
 local shadow = Instance.new("ImageLabel")
 shadow.Image = "rbxassetid://1316045217"
 shadow.ImageColor3 = colors.accent
-shadow.ImageTransparency = 0.7
+shadow.ImageTransparency = 0.6
 shadow.ScaleType = Enum.ScaleType.Slice
 shadow.SliceCenter = Rect.new(10, 10, 10, 10)
 shadow.Size = UDim2.new(1, 20, 1, 20)
@@ -63,40 +69,55 @@ shadow.BackgroundTransparency = 1
 shadow.ZIndex = 0
 shadow.Parent = mainFrame
 
+-- Title bar
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.Size = UDim2.new(1, 0, 0, 45)
 titleBar.BackgroundColor3 = colors.card
-titleBar.BorderSizePixel = 0
+titleBar.BorderSizePixel = 1
+titleBar.BorderColor3 = colors.border
 titleBar.Parent = mainFrame
 
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -80, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.Size = UDim2.new(1, -120, 1, 0)
+titleLabel.Position = UDim2.new(0, 15, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "PANDEMONIUM HUB"
 titleLabel.TextColor3 = colors.accent
-titleLabel.TextSize = 22
+titleLabel.TextSize = 24
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
+-- Minimize button
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 35, 0, 35)
+minimizeBtn.Position = UDim2.new(1, -85, 0, 5)
+minimizeBtn.BackgroundColor3 = colors.card
+minimizeBtn.Text = "–"
+minimizeBtn.TextColor3 = colors.text
+minimizeBtn.TextSize = 24
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.BorderSizePixel = 1
+minimizeBtn.BorderColor3 = colors.border
+minimizeBtn.Parent = titleBar
+
+-- Close button
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -40, 0, 5)
+closeBtn.Size = UDim2.new(0, 35, 0, 35)
+closeBtn.Position = UDim2.new(1, -45, 0, 5)
 closeBtn.BackgroundColor3 = colors.card
-closeBtn.Text = "X"
+closeBtn.Text = "✕"
 closeBtn.TextColor3 = colors.textDim
 closeBtn.TextSize = 18
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.BorderSizePixel = 0
+closeBtn.BorderSizePixel = 1
+closeBtn.BorderColor3 = colors.border
 closeBtn.Parent = titleBar
-closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
 
+-- Search bar
 local searchBox = Instance.new("TextBox")
-searchBox.Size = UDim2.new(1, -40, 0, 35)
-searchBox.Position = UDim2.new(0, 20, 0, 55)
+searchBox.Size = UDim2.new(1, -40, 0, 40)
+searchBox.Position = UDim2.new(0, 20, 0, 60)
 searchBox.BackgroundColor3 = colors.card
 searchBox.TextColor3 = colors.text
 searchBox.PlaceholderText = "🔍 Search scripts..."
@@ -104,26 +125,29 @@ searchBox.PlaceholderColor3 = colors.textDim
 searchBox.Text = ""
 searchBox.TextSize = 16
 searchBox.Font = Enum.Font.Gotham
-searchBox.BorderSizePixel = 0
-searchBox.ClipsDescendants = true
+searchBox.BorderSizePixel = 1
+searchBox.BorderColor3 = colors.border
 searchBox.Parent = mainFrame
 
-local refreshBtn = Instance.new("TextButton")
-refreshBtn.Size = UDim2.new(0, 35, 0, 35)
-refreshBtn.Position = UDim2.new(1, -55, 0, 55)
-refreshBtn.BackgroundColor3 = colors.card
-refreshBtn.Text = "⟳"
-refreshBtn.TextColor3 = colors.accent
-refreshBtn.TextSize = 20
-refreshBtn.Font = Enum.Font.GothamBold
-refreshBtn.BorderSizePixel = 0
-refreshBtn.Parent = mainFrame
+-- Reload button (decal)
+local reloadBtn = Instance.new("ImageButton")
+reloadBtn.Size = UDim2.new(0, 40, 0, 40)
+reloadBtn.Position = UDim2.new(1, -55, 0, 60)
+reloadBtn.BackgroundColor3 = colors.card
+reloadBtn.Image = "rbxassetid://94269559571205"
+reloadBtn.ScaleType = Enum.ScaleType.Fit
+reloadBtn.BorderSizePixel = 1
+reloadBtn.BorderColor3 = colors.border
+reloadBtn.Parent = mainFrame
 
+-- Scripts container (scrolling frame)
 local scriptContainer = Instance.new("ScrollingFrame")
-scriptContainer.Size = UDim2.new(1, -20, 1, -120)
-scriptContainer.Position = UDim2.new(0, 10, 0, 100)
-scriptContainer.BackgroundTransparency = 1
-scriptContainer.BorderSizePixel = 0
+scriptContainer.Size = UDim2.new(1, -20, 1, -130)
+scriptContainer.Position = UDim2.new(0, 10, 0, 115)
+scriptContainer.BackgroundColor3 = colors.card
+scriptContainer.BackgroundTransparency = 0.3
+scriptContainer.BorderSizePixel = 1
+scriptContainer.BorderColor3 = colors.border
 scriptContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
 scriptContainer.ScrollBarThickness = 6
 scriptContainer.ScrollBarImageColor3 = colors.accent
@@ -154,6 +178,148 @@ noScriptsLabel.Font = Enum.Font.Gotham
 noScriptsLabel.Visible = false
 noScriptsLabel.Parent = scriptContainer
 
+-- Resize handle (bottom-right corner)
+local resizeHandle = Instance.new("Frame")
+resizeHandle.Size = UDim2.new(0, 15, 0, 15)
+resizeHandle.Position = UDim2.new(1, -15, 1, -15)
+resizeHandle.BackgroundColor3 = colors.accent
+resizeHandle.BorderSizePixel = 0
+resizeHandle.Parent = mainFrame
+
+-- Minimized state variables
+local minimized = false
+local minimizedIcon = nil
+local originalSize = mainFrame.Size
+local originalPos = mainFrame.Position
+
+-- Create minimized floating icon
+local function createMinimizedIcon()
+    local icon = Instance.new("ImageLabel")
+    icon.Size = UDim2.new(0, 50, 0, 50)
+    icon.Position = UDim2.new(0, 20, 0, 100)
+    icon.BackgroundColor3 = colors.card
+    icon.BorderSizePixel = 2
+    icon.BorderColor3 = colors.accent
+    icon.Image = "rbxassetid://94269559571205"
+    icon.ScaleType = Enum.ScaleType.Fit
+    icon.BackgroundTransparency = 0.2
+    icon.Parent = screenGui
+    
+    local iconLabel = Instance.new("TextLabel")
+    iconLabel.Size = UDim2.new(1, 0, 0, 20)
+    iconLabel.Position = UDim2.new(0, 0, 1, -20)
+    iconLabel.BackgroundTransparency = 1
+    iconLabel.Text = "Pandemonium"
+    iconLabel.TextColor3 = colors.accent
+    iconLabel.TextSize = 10
+    iconLabel.Font = Enum.Font.GothamBold
+    iconLabel.Parent = icon
+    
+    -- Make icon draggable
+    local dragging = false
+    local dragStart, startPos
+    icon.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = icon.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    icon.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+            local delta = input.Position - dragStart
+            icon.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    
+    icon.MouseButton1Click:Connect(function()
+        -- Restore main window
+        minimized = false
+        mainFrame.Visible = true
+        mainFrame.Size = originalSize
+        mainFrame.Position = originalPos
+        icon:Destroy()
+        minimizedIcon = nil
+    end)
+    
+    return icon
+end
+
+-- Minimize action
+minimizeBtn.MouseButton1Click:Connect(function()
+    if minimized then return end
+    minimized = true
+    originalSize = mainFrame.Size
+    originalPos = mainFrame.Position
+    mainFrame.Visible = false
+    minimizedIcon = createMinimizedIcon()
+end)
+
+-- Close action
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Resize logic
+local resizing = false
+local startMousePos, startSize
+
+resizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        resizing = true
+        startMousePos = input.Position
+        startSize = mainFrame.Size
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                resizing = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - startMousePos
+        local newWidth = math.clamp(startSize.X.Offset + delta.X, 400, 900)
+        local newHeight = math.clamp(startSize.Y.Offset + delta.Y, 400, 800)
+        mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+        -- Adjust container sizes
+        scriptContainer.Size = UDim2.new(1, -20, 1, -130)
+        searchBox.Size = UDim2.new(1, -40, 0, 40)
+        reloadBtn.Position = UDim2.new(1, -55, 0, 60)
+    end
+end)
+
+-- Draggable title bar
+local dragging = false
+local dragStart, startPos
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Script button management
 local currentButtons = {}
 
 local function clearScriptButtons()
@@ -172,7 +338,8 @@ local function createScriptButton(scriptName, fileName)
     btn.TextSize = 16
     btn.Font = Enum.Font.Gotham
     btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.BorderSizePixel = 0
+    btn.BorderSizePixel = 1
+    btn.BorderColor3 = colors.border
     btn.AutoButtonColor = false
     
     local hoverIn = TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = colors.accentDark})
@@ -286,31 +453,8 @@ searchBox:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
-refreshBtn.MouseButton1Click:Connect(function()
+reloadBtn.MouseButton1Click:Connect(function()
     fetchAndBuild()
-end)
-
-local dragging = false
-local dragInput, dragStart, startPos
-
-titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-titleBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
 end)
 
 fetchAndBuild()
